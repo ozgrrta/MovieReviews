@@ -1,11 +1,9 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using GraphQL;
-using GraphQL.Types;
 using Microsoft.EntityFrameworkCore;
 using MovieReviews.Database;
 using MovieReviews.GraphQL;
-using MovieReviews.GraphQL.Types;
 using MovieReviews.Repository;
 using System.Reflection;
 
@@ -56,9 +54,6 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.UseGraphQL();
-//app.UseGraphQL<MovieReviewSchema>("/graphql");
-
-// Enables Altair UI at path /
 app.UseGraphQLAltair();
 
 app.MapControllers();
