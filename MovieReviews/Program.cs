@@ -1,10 +1,13 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using GraphQL;
+using GraphQL.Types;
 using Microsoft.EntityFrameworkCore;
 using MovieReviews.Database;
 using MovieReviews.GraphQL;
+using MovieReviews.GraphQL.Types;
 using MovieReviews.Repository;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,10 +15,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory())
 		   .ConfigureContainer<ContainerBuilder>(containerBuilder =>
 		   {
-			   containerBuilder.RegisterType<HttpContextAccessor>().As<IHttpContextAccessor>().SingleInstance();
 			   containerBuilder.RegisterType<MovieRepository>().As<IMovieRepository>().InstancePerLifetimeScope();
-			   containerBuilder.RegisterType<QueryObject>().AsSelf().SingleInstance();
-			   containerBuilder.RegisterType<MovieReviewSchema>().AsSelf().SingleInstance();
+			   containerBuilder.RegisterType<QueryObject>().AsSelf().SingleInstance().UsingConstructor(typeof(IMovieRepository));
+			   containerBuilder.RegisterType<MutationObject>().AsSelf().SingleInstance().UsingConstructor(typeof(IMovieRepository));
 		   });
 
 // Add services to the container.
@@ -29,15 +31,15 @@ builder.Services
 	   .AddEntityFrameworkInMemoryDatabase()
 	   .AddDbContext<MovieContext>(context => { context.UseInMemoryDatabase("MovieDb"); });
 
-builder.Services
-		.AddGraphQL(o =>
-		{
-			// Adds all graph types in the current assembly with a singleton lifetime.
-			o.AddGraphTypes();
-			// Add GraphQL data loader to reduce the number of calls to our repository. https://graphql-dotnet.github.io/docs/guides/dataloader/
-			o.AddDataLoader();
-			o.AddSystemTextJson();
-		});
+builder.Services.AddGraphQL(options =>
+{
+	options.AddErrorInfoProvider(o => o.ExposeExceptionDetails = builder.Environment.IsDevelopment());
+	options.AddSchema<MovieReviewSchema>();
+	options.AddGraphTypes(Assembly.GetExecutingAssembly());
+	options.AddDataLoader();
+	options.AddSystemTextJson();
+});
+
 
 
 var app = builder.Build();
@@ -53,10 +55,11 @@ app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
-app.UseGraphQL<MovieReviewSchema>("/graphql");
+app.UseGraphQL();
+//app.UseGraphQL<MovieReviewSchema>("/graphql");
 
 // Enables Altair UI at path /
-app.UseGraphQLAltair(path: "/");
+app.UseGraphQLAltair();
 
 app.MapControllers();
 
