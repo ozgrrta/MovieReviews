@@ -1,6 +1,5 @@
 ﻿using GraphQL.Types;
 using MovieReviews.Models;
-using System.Xml.Linq;
 
 namespace MovieReviews.GraphQL.Types
 {
