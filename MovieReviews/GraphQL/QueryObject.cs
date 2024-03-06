@@ -1,28 +1,37 @@
 ﻿using GraphQL;
+using GraphQL.Resolvers;
 using GraphQL.Types;
 using MovieReviews.GraphQL.Types;
-using MovieReviews.Models;
 using MovieReviews.Repository;
 
 namespace MovieReviews.GraphQL
 {
 	public class QueryObject : ObjectGraphType<object>
 	{
-		public QueryObject(IMovieRepository repository)
+		public QueryObject(IMovieRepository movieRepository)
 		{
-			Name = "Queries";
-			Description = "The base query for all the entities in our object graph.";
+			AddField(new FieldType
+			{
+				Name = "movies",
+				Type = typeof(ListGraphType<MovieObject>),
+				Resolver = new FuncFieldResolver<object>(async context =>
+				{
+					return await movieRepository.GetMoviesAsync();
+				})
+			});
 
-			FieldAsync<MovieObject, Movie>(
-				"movie",
-				"Gets a movie by its unique identifier.",
-				new QueryArguments(
-					new QueryArgument<NonNullGraphType<IdGraphType>>
-					{
-						Name = "id",
-						Description = "The unique GUID of the movie."
-					}),
-				context => repository.GetMovieByIdAsync(context.GetArgument("id", Guid.Empty)));
+			AddField(new FieldType
+			{
+				Name = "movie",
+				Type = typeof(MovieObject),
+				Arguments = new QueryArguments(
+					new QueryArgument<NonNullGraphType<GuidGraphType>> { Name = "id" }
+				),
+				Resolver = new FuncFieldResolver<object>(async context =>
+				{
+					return await movieRepository.GetMovieByIdAsync(context.GetArgument("id", Guid.Empty));
+				})
+			});
 		}
 	}
 }
