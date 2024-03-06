@@ -1,9 +1,9 @@
 ﻿using GraphQL;
+using GraphQL.Resolvers;
 using GraphQL.Types;
 using MovieReviews.GraphQL.Types;
 using MovieReviews.Models;
 using MovieReviews.Repository;
-using System.Xml.Linq;
 
 namespace MovieReviews.GraphQL
 {
@@ -14,11 +14,14 @@ namespace MovieReviews.GraphQL
 			Name = "Mutations";
 			Description = "The base mutation for all the entities in our object graph.";
 
-			FieldAsync<MovieObject, Movie>(
-				"addReview",
-				"Add review to a movie.",
-				new QueryArguments(
-					new QueryArgument<NonNullGraphType<IdGraphType>>
+			AddField(new FieldType
+			{
+				Name = "addReview",
+				Description = "Add review to a movie.",
+				Type = typeof(MovieObject),
+				Arguments = new QueryArguments
+				(
+					new QueryArgument<NonNullGraphType<GuidGraphType>>
 					{
 						Name = "id",
 						Description = "The unique GUID of the movie."
@@ -26,14 +29,16 @@ namespace MovieReviews.GraphQL
 					new QueryArgument<NonNullGraphType<ReviewInputObject>>
 					{
 						Name = "review",
-						Description = "Review for the movie."
-					}),
-				context =>
+						Description = "Review for the movie"
+					}
+				),
+				Resolver = new FuncFieldResolver<object>(context =>
 				{
 					var id = context.GetArgument<Guid>("id");
 					var review = context.GetArgument<Review>("review");
 					return repository.AddReviewToMovieAsync(id, review);
-				});
+				})
+			});
 		}
 	}
 }
