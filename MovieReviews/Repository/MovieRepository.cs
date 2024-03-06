@@ -14,14 +14,19 @@ namespace MovieReviews.Repository
 			_context.Database.EnsureCreated();
 		}
 
-		public Task<Movie> GetMovieByIdAsync(Guid id)
+		public async Task<List<Movie>> GetMoviesAsync()
 		{
-			return _context.Movie.Where(m => m.Id == id).AsNoTracking().FirstOrDefaultAsync();
+			return await _context.Movies.AsNoTracking().ToListAsync();
+		}
+
+		public async Task<Movie> GetMovieByIdAsync(Guid id)
+		{
+			return await _context.Movies.Where(m => m.Id == id).AsNoTracking().FirstOrDefaultAsync();
 		}
 
 		public async Task<Movie> AddReviewToMovieAsync(Guid id, Review review)
 		{
-			var movie = await _context.Movie.Where(m => m.Id == id).FirstOrDefaultAsync();
+			var movie = await _context.Movies.Where(m => m.Id == id).FirstOrDefaultAsync();
 			movie.AddReview(review);
 			await _context.SaveChangesAsync();
 			return movie;
