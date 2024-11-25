@@ -6,6 +6,6 @@ namespace MovieReviews.Repository
 	{
 		Task<List<Movie>> GetMoviesAsync();
 		Task<Movie> GetMovieByIdAsync(Guid id);
-		Task<Movie> AddReviewToMovieAsync(Guid id, Review review);
+		Task<Movie> AddReviewToMovieAsync(Guid movieId, Review review);
 	}
 }

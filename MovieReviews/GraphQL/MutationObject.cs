@@ -32,11 +32,11 @@ namespace MovieReviews.GraphQL
 						Description = "Review for the movie"
 					}
 				),
-				Resolver = new FuncFieldResolver<object>(context =>
+				Resolver = new FuncFieldResolver<object>(async context =>
 				{
 					var id = context.GetArgument<Guid>("id");
 					var review = context.GetArgument<Review>("review");
-					return repository.AddReviewToMovieAsync(id, review);
+					return await repository.AddReviewToMovieAsync(id, review);
 				})
 			});
 		}

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MovieReviews.Database;
+using MovieReviews.GraphQL.Types;
 using MovieReviews.Models;
 
 namespace MovieReviews.Repository
@@ -24,9 +25,9 @@ namespace MovieReviews.Repository
 			return await _context.Movies.Where(m => m.Id == id).AsNoTracking().FirstOrDefaultAsync();
 		}
 
-		public async Task<Movie> AddReviewToMovieAsync(Guid id, Review review)
+		public async Task<Movie> AddReviewToMovieAsync(Guid movieId, Review review)
 		{
-			var movie = await _context.Movies.Where(m => m.Id == id).FirstOrDefaultAsync();
+			var movie = await _context.Movies.Where(m => m.Id == movieId).FirstOrDefaultAsync();
 			movie.AddReview(review);
 			await _context.SaveChangesAsync();
 			return movie;
